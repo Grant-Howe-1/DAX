@@ -1,0 +1,80 @@
+DEFINE
+    VAR __DS0FilterTable = 
+        TREATAS(
+            {"Visit Expected End Date"},
+            'Calculations - Visit Date Selected'[Visit Date Selected]
+        )
+
+    VAR __DS0FilterTable2 = 
+        TREATAS({"Both"}, 'Deliver Visits Parameter'[Category])
+
+    VAR __DS0FilterTable3 = 
+        TREATAS({"PPM"}, 'Dim Client Contract'[Extra Works/PPM])
+
+    VAR __DS0FilterTable4 = 
+        TREATAS({"Current Fiscal Year"}, 'Dates'[Current Fiscal Year Selector])
+
+    VAR __DS0FilterTable5 = 
+        TREATAS({"Anglian Water Services Ltd"}, 'Dim Client'[Client Name])
+
+    VAR __DS0FilterTable6 = 
+        FILTER(
+            KEEPFILTERS(VALUES('Dates'[Date])),
+            'Dates'[Date] >= DATE(2021, 4, 1)
+        )
+
+    VAR __DS0Core = 
+        SUMMARIZECOLUMNS(
+            'Dates'[Fiscal Month Short],
+            __DS0FilterTable,
+            __DS0FilterTable2,
+            __DS0FilterTable3,
+            __DS0FilterTable4,
+            __DS0FilterTable5,
+            __DS0FilterTable6,
+            "Not_Yet_Due_Visits________", 'Measure Table'[Not Yet Due Visits (# & %)],
+            "Scheduled_Visits________", 'Measure Table'[Scheduled Visits (# & %)],
+            "Total_Visits________", 'Measure Table'[Total Visits (# & %)],
+            "Completed_Visits________", 'Measure Table'[Completed Visits (# & %)],
+            "Over_Due_Visits________", 'Measure Table'[Over Due Visits (# & %)],
+            "On_Time_Visits________", 'Measure Table'[On Time Visits (# & %)],
+            "Early_Visits________", 'Measure Table'[Early Visits (# & %)],
+            "Late_Visits________", 'Measure Table'[Late Visits (# & %)],
+            "Missed_Visits________", 'Measure Table'[Missed Visits (# & %)],
+            "No_Access_Visits________", 'Measure Table'[No Access Visits (# & %)],
+            "Due_Now_Visits________", 'Measure Table'[Due Now Visits (# & %)]
+        )
+
+    VAR __DS0CoreWithCalMonth =
+        ADDCOLUMNS(
+            __DS0Core,
+            "__CalendarMonthSort",
+            SWITCH(
+                'Dates'[Fiscal Month Short],
+                "Jan", 1,
+                "Feb", 2,
+                "Mar", 3,
+                "Apr", 4,
+                "May", 5,
+                "Jun", 6,
+                "Jul", 7,
+                "Aug", 8,
+                "Sep", 9,
+                "Oct", 10,
+                "Nov", 11,
+                "Dec", 12
+            )
+        )
+
+    VAR __DS0BodyLimited = 
+        TOPN(
+            500000,
+            __DS0CoreWithCalMonth,
+            [__CalendarMonthSort], 1
+        )
+
+EVALUATE
+    __DS0BodyLimited
+
+ORDER BY
+    [__CalendarMonthSort]
