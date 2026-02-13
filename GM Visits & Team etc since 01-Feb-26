@@ -248,3 +248,130 @@ ORDER BY
 	'Dim CM'[Line Manager Name],
 	'Dim CM'[Trading Unit],
 	'Fact Visit'[Team Scheduled Date]
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+DEFINE
+	VAR __DS0FilterTable = 
+		TREATAS({"Grounds Maintenance"}, 'Dim CD'[Division])
+
+	VAR __DS0FilterTable2 = 
+		FILTER(
+			KEEPFILTERS(VALUES('Dim Visit'[Expected Start Date])),
+			'Dim Visit'[Expected Start Date] >= DATE(2026, 2, 1)
+		)
+
+	VAR __DS0Core = 
+		SELECTCOLUMNS(
+			KEEPFILTERS(
+				FILTER(
+					KEEPFILTERS(
+						SUMMARIZECOLUMNS(
+							'Dim Visit'[Visit ID],
+							'Dim Client Contract'[Extra Works/PPM],
+							'Dim Site'[Site ID],
+							'Dim Site'[Site Name],
+							'Dim CM'[Full Name],
+							'Dim CM'[Line Manager Name],
+							'Dim CM'[Trading Unit],
+							'Dim Field Team'[Name],
+							'Dim Field Team'[Team ID],
+							'Dim Client'[Client ID],
+							'Dim Client'[Client Name],
+							__DS0FilterTable,
+							__DS0FilterTable2,
+							"CountRowsFact_Visit", COUNTROWS('Fact Visit'),
+							"CountRowsFact_Tender", COUNTROWS('Fact Tender')
+						)
+					),
+					OR(
+						OR(
+							OR(
+								OR(
+									OR(
+										OR(
+											OR(
+												OR(
+													OR(
+														OR(
+															NOT(ISBLANK('Dim Visit'[Visit ID])),
+															NOT(ISBLANK('Dim Client Contract'[Extra Works/PPM]))
+														),
+														NOT(ISBLANK('Dim Site'[Site ID]))
+													),
+													NOT(ISBLANK('Dim Site'[Site Name]))
+												),
+												NOT(ISBLANK('Dim CM'[Full Name]))
+											),
+											NOT(ISBLANK('Dim CM'[Line Manager Name]))
+										),
+										NOT(ISBLANK('Dim CM'[Trading Unit]))
+									),
+									NOT(ISBLANK('Dim Field Team'[Name]))
+								),
+								NOT(ISBLANK('Dim Field Team'[Team ID]))
+							),
+							NOT(ISBLANK('Dim Client'[Client ID]))
+						),
+						NOT(ISBLANK('Dim Client'[Client Name]))
+					)
+				)
+			),
+			"'Dim Visit'[Visit ID]", 'Dim Visit'[Visit ID],
+			"'Dim Client Contract'[Extra Works/PPM]", 'Dim Client Contract'[Extra Works/PPM],
+			"'Dim Site'[Site ID]", 'Dim Site'[Site ID],
+			"'Dim Site'[Site Name]", 'Dim Site'[Site Name],
+			"'Dim CM'[Full Name]", 'Dim CM'[Full Name],
+			"'Dim CM'[Line Manager Name]", 'Dim CM'[Line Manager Name],
+			"'Dim CM'[Trading Unit]", 'Dim CM'[Trading Unit],
+			"'Dim Field Team'[Name]", 'Dim Field Team'[Name],
+			"'Dim Field Team'[Team ID]", 'Dim Field Team'[Team ID],
+			"'Dim Client'[Client ID]", 'Dim Client'[Client ID],
+			"'Dim Client'[Client Name]", 'Dim Client'[Client Name]
+		)
+
+	VAR __DS0BodyLimited = 
+		TOPN(
+			500000,
+			__DS0Core,
+			'Dim Visit'[Visit ID],
+			1,
+			'Dim Client Contract'[Extra Works/PPM],
+			1,
+			'Dim Site'[Site ID],
+			1,
+			'Dim Site'[Site Name],
+			1,
+			'Dim CM'[Full Name],
+			1,
+			'Dim CM'[Line Manager Name],
+			1,
+			'Dim CM'[Trading Unit],
+			1,
+			'Dim Field Team'[Name],
+			1,
+			'Dim Field Team'[Team ID],
+			1,
+			'Dim Client'[Client ID],
+			1,
+			'Dim Client'[Client Name],
+			1
+		)
+
+EVALUATE
+	__DS0BodyLimited
+
+ORDER BY
+	'Dim Visit'[Visit ID],
+	'Dim Client Contract'[Extra Works/PPM],
+	'Dim Site'[Site ID],
+	'Dim Site'[Site Name],
+	'Dim CM'[Full Name],
+	'Dim CM'[Line Manager Name],
+	'Dim CM'[Trading Unit],
+	'Dim Field Team'[Name],
+	'Dim Field Team'[Team ID],
+	'Dim Client'[Client ID],
+	'Dim Client'[Client Name]
