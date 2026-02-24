@@ -9,6 +9,41 @@ TREATAS(
     'Dim Client'[Client Name]
 )
 
-The variale (VAR) DS0 (dataset (Semantic model I think? Could be wrong...) used index 0 (no.1)) FilterTable is just a label. None of it is defined syntax, and will appear when power BI auto-generates a clump of DAX from a built visual. 
+The variale (VAR) DS0 (dataset) used index 0 (no.1)) FilterTable is just a label. None of it is defined syntax, and will appear when power BI auto-generates a clump of DAX from a built visual. 
 In this example, it will return the column Client Name from the table Dim Client, filtered to just contain those 2 possible values. the text betwen the {} is known as a string literal. 
+
+! N.B not all __DSx variables (where x is an integer) have to be data that is purely related to relationships- some may be according to the structuring of the report itsef. ~90% of the time, variables with this naming convention will indeed be tables / datasets, however they 
+also may be scalar quantities, such as calculations, or like the below example...
+
+  VAR __DS0FilterTable2 = 
+        TREATAS(
+            { "Visit Team Scheduled Date" },
+            'Calculations - Visit Date Selected'[Visit Date Selected]
+        )
+
+
+Visit Date Selected is not something you would see as an actual column, it can essentially be seen as meta-data imbedded within the DAX itself. When reports have a time window- such as for visits, this semantic model has visit date selected, which allows you to 
+dictate how time-based filtering works. In this example, Visit Team Scheduled date is used (this is feeding from OM_Visit_Multi_Day, just for reference.)
+
+2. FILTER, KEEPFILTERS
+
+It is important to note 2 things:
+1. That logical operators in DAX are not the same as bitwise operators, e.g. python will use &, |, but DAX will use &&, ||. These for all intensive purposes are to be treated as equivalent. 
+2. DAX treats dates as numbers, so adding an integer value of y, will add y days to this date. e.g. +14 will create a time window of 2 weeks from the starting date.
+
+Thus:
+    
+VAR __Today = TODAY() // Similar syntax to SQL and other date-time usages!
+VAR __WindowStart = __Today // Calling on the variable defined immediately above
+VAR __WindowEnd = __Today + 14  //Creates a 2-week time-window starting from the current date.
+
+-->
+
+VAR __DS0FilterTable3 =
+    FILTER(
+        KEEPFILTERS(VALUES('Fact Visit'[Team Scheduled Date])),   // KEEPFILTERS : The team scheduled date column in Fact Visit may have filters already applied to it. Wrapping this with the KEEPFILTERS operation will prevent n=any below filters from overriding them.
+        'Fact Visit'[Team Scheduled Date] >= __WindowStart && // Greater than or equal to operator, using one of the scalar variables (remember, DAX treats dates as integers) defined above and the DAX-equivalent AND operator &&
+        'Fact Visit'[Team Scheduled Date] < __WindowEnd //Smaller than WindowEnd scalar variable defined above.
+    )
+
 
