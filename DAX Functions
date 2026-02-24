@@ -150,3 +150,31 @@ Reliability = DIVIDE( [Completed Visits],
 ! ALLSELECTED is another operator, which acts as a filter. It says 'Only consider this calculation when The delivery performance is the following {whatever the user has SELECTED}'
 If all of the delivery performamces are selected, then this is no issue.
 
+--> Another example, with a breakdown:
+
+% Completed via Hubscape = DIVIDE(
+                            CALCULATE([Completed Visits], 
+                            KEEPFILTERS('Dim Visit Completion Source'[Completion Source Description] = "Hubscape")),
+                            CALCULATE([Completed Visits))
+ 
+
+This is a division, where there are 2 arguments- a numerator and a denominator, both of which are embedded within CALCULATE functions.
+
+In the first CALCULATE operation, it is to calculate the number of completed visits (which is some other arbitrary calculated measure) with the condition (a filter) that the completion source description has the text value 'hubscape'. Since this is a filter being applied, and this itself is based off a filter for the value of 'hubscape', it is protected by  KEEPFILTERS function to prevent existing filters from being over-written. All of this is acting as the numerator.
+
+For the denominator, this is just the calculated measure of Completed Visits. This is the baseline for what the percentage calculation is against, so there is no condition passed. The only error is that the calculated measure is surrounded with a open square bracket and a closed parenthesis '[)', rather than '[]'
+
+
+Team Scheduled Visits With 1 Revision :=
+CALCULATE(
+    [Total Visits],
+    'Fact Visit'[Team Revision Count] = 1,
+    USERELATIONSHIP(Dates[Date], 'Fact Visit'[Team Scheduled Date])
+)
+This again is an example of a calculation column, this time round there are 2 conditions being passed as filters rather than one.
+According to the KPI catalogue, the metric being considered is 'First Time Delivery'. I have asked Alex what specifically this means.
+It is most likely that the [Total Visits] calculated measure has some sort of time window (a date parameter). As you know, in our power BI reports, 'Dates'[Date] can have many different relationships- only one can be used at a time, (Ben showed you this in London!) however. This is 
+specified to be the relationship with Team Scheduled date, via USERELATIONSHIP.
+
+
+
