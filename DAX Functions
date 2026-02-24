@@ -1,0 +1,14 @@
+1. TREATAS() --> This will return a filter tanle. E.g.:
+
+VAR __DS0FilterTable=
+TREATAS(
+    {
+        "CBRE - Yorkshire Water",
+        "CBRE - Yorkshire Water - Auto"
+    },
+    'Dim Client'[Client Name]
+)
+
+The variale (VAR) DS0 (dataset (Semantic model I think? Could be wrong...) used index 0 (no.1)) FilterTable is just a label. None of it is defined syntax, and will appear when power BI auto-generates a clump of DAX from a built visual. 
+In this example, it will return the column Client Name from the table Dim Client, filtered to just contain those 2 possible values. the text betwen the {} is known as a string literal. 
+
