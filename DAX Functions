@@ -171,10 +171,25 @@ CALCULATE(
     'Fact Visit'[Team Revision Count] = 1,
     USERELATIONSHIP(Dates[Date], 'Fact Visit'[Team Scheduled Date])
 )
+
+
+% Team Scheduled Visits With 1 Revision :=
+DIVIDE(
+    [Team Scheduled Visits With 1 Revision],
+    [Team Scheduled Visits]
+)
+
+
 This again is an example of a calculation column, this time round there are 2 conditions being passed as filters rather than one.
-According to the KPI catalogue, the metric being considered is 'First Time Delivery'. I have asked Alex what specifically this means.
+According to the KPI catalogue, the metric being considered is 'First Time Delivery'. I have asked Alex what specifically this means. --> "its how many times a team revises the scheduled date, so we get an idea of what teams are saying "i'll do it tomorrow" constantly."
 It is most likely that the [Total Visits] calculated measure has some sort of time window (a date parameter). As you know, in our power BI reports, 'Dates'[Date] can have many different relationships- only one can be used at a time, (Ben showed you this in London!) however. This is 
-specified to be the relationship with Team Scheduled date, via USERELATIONSHIP.
+specified to be the relationship with Team Scheduled date, via USERELATIONSHIP. --> why not visit date selected? maybe both approaches are correct maybe only one, maybe neither... Ask Ben at some point...
+
+i.e. 'Calculations - Visit Date Selected'[Visit Date Selected]
 
 
-
+CALCULATE(
+    [Total Visits],
+    'Fact Visit'[Team Revision Count] = 1,
+    KEEPFILTERS('Calculations - Visit Date Selected'[Visit Date Selected] = "Visit Team Scheduled Date")
+)
