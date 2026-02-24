@@ -46,4 +46,107 @@ VAR __DS0FilterTable3 =
         'Fact Visit'[Team Scheduled Date] < __WindowEnd //Smaller than WindowEnd scalar variable defined above.
     )
 
+3. SUMMARIZECOLUMNS- This will be the overall engine of the query- this is where the columns are grouped together, selected, and a table / dataset is built in the background. It can be visualised in the same way as building a table in Power BI service / Excel via a live 
+Power BI connection. Matches will only appear where matches can be found - remember that the filter table variables are tables / datasets themselves, so this is why they appear in the summarise columns!
+
+
+ VAR __DS0Core = 
+        SELECTCOLUMNS( //Select columns is used to specify both WHAT columns are being taken from the summarisation table output (RHS of comma) and the column name Alias (LHS of bracket) - it will have a baseline, (ANALAGOUS TO FILTER), and then the aforementioned paraneters. 
+            KEEPFILTERS(
+                FILTER(
+                    KEEPFILTERS(                                                               // Remember when filtering, the first argument acts as a baseline! This is the summarize columns output- which is surrounded with a summarize columns function as not to over-write existing filters.
+                        SUMMARIZECOLUMNS(
+                            'Dim Client'[Client Name],
+                            'Fact Visit'[Team Scheduled Date],
+                            'Dim Site'[Site ID],
+                            'Dim Site'[Site Name],
+                            'Fact Visit'[Expected Start Date],
+                            'Fact Visit'[Expected End Date],
+                            'Dim CM'[Full Name],
+                            'Dim Visit'[Start Date],
+                            'Dim Visit'[End Date],
+                            'Dim Delivery Performance'[Delivery Performance Grouped],
+                            'Dim Visit'[Visit ID],
+                            'Dim Visit'[Visit Number],
+                            'Dim Client Contract'[Contract Type],
+                            __DS0FilterTable,
+                            __DS0FilterTable2,
+                            __DS0FilterTable3,
+                            "CountRowsFact_Visit", COUNTROWS('Fact Visit')
+                        )
+                    ),
+                    NOT(                                                          //NOT() --> If the condition inside the bracket is NOT True.
+                        ISBLANK('Dim Client'[Client Name])
+                        && ISBLANK('Fact Visit'[Team Scheduled Date])             //ISBLANK searches for NULL values- it is being applied to every column for tidying-up purposes and completion.
+                        && ISBLANK('Dim Site'[Site ID])
+                        && ISBLANK('Dim Site'[Site Name])
+                        && ISBLANK('Fact Visit'[Expected Start Date])
+                        && ISBLANK('Fact Visit'[Expected End Date])
+                        && ISBLANK('Dim CM'[Full Name])
+                        && ISBLANK('Dim Visit'[Start Date])
+                        && ISBLANK('Dim Visit'[End Date])
+                        && ISBLANK('Dim Delivery Performance'[Delivery Performance Grouped])
+                        && ISBLANK('Dim Visit'[Visit ID])
+                        && ISBLANK('Dim Visit'[Visit Number])
+                        && ISBLANK('Dim Client Contract'[Contract Type])
+                    )
+                )
+            ),
+            "'Dim Client'[Client Name]", 'Dim Client'[Client Name],                     //This is the Select columns operation, where the LHS is the Alias, and the RHS is the value itself.
+            "'Fact Visit'[Team Scheduled Date]", 'Fact Visit'[Team Scheduled Date],
+            "'Dim Site'[Site ID]", 'Dim Site'[Site ID],
+            "'Dim Site'[Site Name]", 'Dim Site'[Site Name],
+            "'Fact Visit'[Expected Start Date]", 'Fact Visit'[Expected Start Date],
+            "'Fact Visit'[Expected End Date]", 'Fact Visit'[Expected End Date],
+            "'Dim CM'[Full Name]", 'Dim CM'[Full Name],
+            "'Dim Visit'[Start Date]", 'Dim Visit'[Start Date],
+            "'Dim Visit'[End Date]", 'Dim Visit'[End Date],
+            "'Dim Delivery Performance'[Delivery Performance Grouped]", 'Dim Delivery Performance'[Delivery Performance Grouped],
+            "'Dim Visit'[Visit ID]", 'Dim Visit'[Visit ID],
+            "'Dim Visit'[Visit Number]", 'Dim Visit'[Visit Number],
+            "'Dim Client Contract'[Contract Type]", 'Dim Client Contract'[Contract Type]
+        )
+
+4. FORMAT- Syntax: FORMAT(Value, format_string)
+The Format Operation takes any value input and converts it into text, then formats this new text according to the argued format string. N.B the return will always, by definition, be a string.
+
+    VAR __DS0Final =
+        SELECTCOLUMNS(  // Once again using the select columns- why? Because there are dates, and they need to be converted properlyl. The format string parameter takes upon very specific string values- we have seen similar methodologies in python pandas group-by formulae.
+            __DS0Core,   //BASELINE (The above Variable __DS0Core)
+            "'Dim Client'[Client Name]", 'Dim Client'[Client Name],
+            "'Fact Visit'[Team Scheduled Date]", FORMAT('Fact Visit'[Team Scheduled Date], "dd/MM/yyyy"), // Converting into a Date
+            "'Dim Site'[Site ID]", 'Dim Site'[Site ID],
+            "'Dim Site'[Site Name]", 'Dim Site'[Site Name],
+            "'Fact Visit'[Expected Start Date]", FORMAT('Fact Visit'[Expected Start Date], "dd/MM/yyyy"),  // Converting into a Date
+            "'Fact Visit'[Expected End Date]", FORMAT('Fact Visit'[Expected End Date], "dd/MM/yyyy"),   // Converting into a Date
+            "'Dim CM'[Full Name]", 'Dim CM'[Full Name],
+            "'Dim Visit'[Start Date]", FORMAT('Dim Visit'[Start Date], "dd/MM/yyyy"),   // Converting into a Date
+            "'Dim Visit'[End Date]", FORMAT('Dim Visit'[End Date], "dd/MM/yyyy"),   // Converting into a Date
+            "'Dim Delivery Performance'[Delivery Performance Grouped]", 'Dim Delivery Performance'[Delivery Performance Grouped],
+            "'Dim Visit'[Visit ID]", 'Dim Visit'[Visit ID],
+            "'Dim Visit'[Visit Number]", 'Dim Visit'[Visit Number],
+            "'Dim Client Contract'[Contract Type]", 'Dim Client Contract'[Contract Type]
+        )
+
+EVALUATE
+    __DS0Final  //The variable (which again, is a table/ dataset) in which is returned.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+5. CALCULATE: Syntax = CALCULATE(Measure/Expression,
+                                    filter1,
+                                    filter2,
+                                    ...
+                                    filter_x)
+6. DIVIDE: Syntax= DIVIDE(numerator, denominator)
+
+--> TAKEN FROM KPI CATALOGUE:
+
+Reliability = DIVIDE( [Completed Visits], 
+            CALCULATE( [Total Visits That Should Have Been Done],
+            ALLSELECTED( 'Dim Delivery Performance')))
+
+
+! ALLSELECTED is another operator, which acts as a filter. It says 'Only consider this calculation when The delivery performance is the following {whatever the user has SELECTED}'
+If all of the delivery performamces are selected, then this is no issue.
 
