@@ -1,4 +1,4 @@
-1. TREATAS() --> This will return a filter tanle. E.g.:
+1. TREATAS() --> This will return a filter table. E.g.:
 
 VAR __DS0FilterTable=
 TREATAS(
@@ -9,7 +9,7 @@ TREATAS(
     'Dim Client'[Client Name]
 )
 
-The variale (VAR) DS0 (dataset) used index 0 (no.1)) FilterTable is just a label. None of it is defined syntax, and will appear when power BI auto-generates a clump of DAX from a built visual. 
+The variable (VAR) DS0 (dataset) used index 0 (no.1)) FilterTable is just a label. None of it is defined syntax, and will appear when power BI auto-generates a clump of DAX from a built visual. 
 In this example, it will return the column Client Name from the table Dim Client, filtered to just contain those 2 possible values. the text betwen the {} is known as a string literal. 
 
 ! N.B not all __DSx variables (where x is an integer) have to be data that is purely related to relationships- some may be according to the structuring of the report itsef. ~90% of the time, variables with this naming convention will indeed be tables / datasets, however they 
@@ -138,7 +138,20 @@ EVALUATE
                                     filter2,
                                     ...
                                     filter_x)
-6. DIVIDE: Syntax= DIVIDE(numerator, denominator)
+6. DIVIDE: Syntax= DIVIDE(numerator, denominator, IFERROR) IFERROR is something I named, it is optional
+
+e.g.
+
+% Revenue From Winter :=
+DIVIDE(
+    CALCULATE(
+        SUMX('Fact Jobs', 'Fact Jobs'[Qty] * 'Fact Jobs'[Unit Price]),
+        'Dim Service'[Service Group] = "Winter"
+    ),
+    [Total Revenue],
+    0      -- zero-safe fallback --> If an error is returned, e.g. a zero - division error, the value of 0 is being used as a fall-back or an alternative value. More on SUMX below.
+)
+
 
 --> TAKEN FROM KPI CATALOGUE:
 
@@ -192,4 +205,51 @@ CALCULATE(
     [Total Visits],
     'Fact Visit'[Team Revision Count] = 1,
     KEEPFILTERS('Calculations - Visit Date Selected'[Visit Date Selected] = "Visit Team Scheduled Date")
+)
+
+
+
+
+VAR VisitsWithWarnings =
+    CALCULATE(
+        DISTINCTCOUNT('Fact Visit'[VisitID]),
+        KEEPFILTERS(
+            'Dim Billing Warning Type'[Type] <> BLANK()
+        )
+    )
+VAR WarningFreeVisits =
+    [Completed Visits] - VisitsWithWarnings
+RETURN
+DIVIDE(WarningFreeVisits, Completed)
+
+6. COUNTROWS, SUM, SUMX, DISTINCTCOUNT
+02/03/2026 --> CALCULATE([Total Visits]) : The method of calculation depends entirely on how the variable Total Visits is defined.
+e.g. it may be [Total Visits] = COUNTROWS('Fact Visit'), or [Total Visits] = SUM('Fact Visit'[Duration]), or [Total Visits] = DISTINCTCOUNT('Fact Visit'[Visit ID])
+
+We have seen how divisions work, but for multiplications it is a bit simpler- like with SQL, and even python, the * can be used as an operator, when multiplying 2 scalar quantities together:
+e.g.  
+Revenue :=
+[Unit Price] * [Quantity]
+
+
+However, maybe a total sum of the above revenue will be required- and maybe a condition would be required too. This is where SUMX comes into the equation, and calculates a sum of all the individual multiplication outputs.
+
+e.g. 
+
+Total_Winter_Revenue :=
+CALCULATE(
+    SUMX(
+        'Fact Jobs',  //This is the baseline table, and heren 2 columns from the same table are being multiplied.
+        'Fact Jobs'[Unit Price] * 'Fact Jobs'[Quantity]
+    ),
+    'Dim Service'[Service Group] = "Winter"
+)
+
+What about if the 2 columns are not from the same table? 
+--> This is no issue, but it is important to note that there needs to be an existing relationship between the 2 columns, then you can tell Power BI to use the EXISTING relationship.
+e.g.
+Total Cost :=
+SUMX(
+    'Fact Jobs',
+    'Fact Jobs'[Hours] * RELATED('Dim Rates'[Rate])
 )
