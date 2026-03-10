@@ -253,3 +253,19 @@ SUMX(
     'Fact Jobs',
     'Fact Jobs'[Hours] * RELATED('Dim Rates'[Rate])
 )
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//The below DAX uses a parent and a child calculation to find the number of visit ids (distinct) that do not have any team members (operatives) assigned to their jobs.
+
+Visits_With_Only_Blank_TeamMembers =
+COUNTROWS(  //Parent calculation
+    FILTER(
+        VALUES('Fact Visit'[Visit ID]),
+        CALCULATE(  //Child calculation
+            COUNTROWS('Fact Visit'),
+            NOT ISBLANK('Fact Visit'[Dim Team Member])
+        ) = 0
+    )
+)
+
