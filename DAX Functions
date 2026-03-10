@@ -264,7 +264,7 @@ COUNTROWS(  //Parent calculation
         VALUES('Fact Visit'[Visit ID]),
         CALCULATE(  //Child calculation
             COUNTROWS('Fact Visit'),
-            NOT ISBLANK('Fact Visit'[Dim Team Member])
+            NOT ISBLANK('Dim Team Member'[Operative Name])
         ) = 0
     )
 )
