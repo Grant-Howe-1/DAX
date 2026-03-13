@@ -1,0 +1,56 @@
+USE BOTH AS CALCULATED COLUMNS, NOT MEASURES!
+
+Haversine Distance 1 (KM) =
+VAR EarthRadiusKm = 6378
+VAR lat1 = RADIANS('Merge1'[Site Latitude])
+VAR lon1 = RADIANS('Merge1'[Site Longitude])
+VAR lat2 = RADIANS('Merge1'[StartLatitude])
+VAR lon2 = RADIANS('Merge1'[StartLongitude])
+
+VAR dlat = lat2 - lat1
+VAR dlon = lon2 - lon1
+
+VAR a =
+    POWER(SIN(dlat / 2), 2)
+    + COS(lat1) * COS(lat2) * POWER(SIN(dlon / 2), 2)
+
+VAR c = 2 * ASIN(MIN(1, SQRT(a)))
+
+RETURN
+IF(
+    ISBLANK('Merge1'[Site Latitude]) ||
+    ISBLANK('Merge1'[Site Longitude]) ||
+    ISBLANK('Merge1'[StartLatitude]) ||
+    ISBLANK('Merge1'[StartLongitude]),
+    BLANK(),
+    EarthRadiusKm * c
+)
+
+--------------------------------------------------
+
+Haversine Distance 2 (KM) =
+VAR EarthRadiusKm = 6378
+VAR lat1 = RADIANS('Merge1'[Site Latitude])
+VAR lon1 = RADIANS('Merge1'[Site Longitude])
+VAR lat2 = RADIANS('Merge1'[FinishLatitude])
+VAR lon2 = RADIANS('Merge1'[FinishLongitude])
+
+VAR dlat = lat2 - lat1
+VAR dlon = lon2 - lon1
+
+VAR a =
+    POWER(SIN(dlat / 2), 2)
+    + COS(lat1) * COS(lat2) * POWER(SIN(dlon / 2), 2)
+
+VAR c = 2 * ASIN(MIN(1, SQRT(a)))
+
+RETURN
+IF(
+    ISBLANK('Merge1'[Site Latitude]) ||
+    ISBLANK('Merge1'[Site Longitude]) ||
+    ISBLANK('Merge1'[FinishLatitude]) ||
+    ISBLANK('Merge1'[FinishLongitude]),
+    BLANK(),
+    EarthRadiusKm * c
+)
+
