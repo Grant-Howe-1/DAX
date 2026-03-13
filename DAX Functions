@@ -269,3 +269,14 @@ COUNTROWS(  //Parent calculation
     )
 )
 
+---------------------------------------------
+The below DAX was used, to emulate an SQL CASE usage via DAX. It will be using haversine calculations --> when haversine distance 1 < SLA, or when haversine distance 2 < SLA, then 0, else 1
+
+
+GPS Out of Range Flag =
+IF(
+    'Merge1'[Haversine Distance START (KM)] < 500 || 'Merge1'[Haversine Distance FINISH (KM)] < 0.5,
+    0,
+    1
+)
+
