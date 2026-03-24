@@ -1,0 +1,151 @@
+DEFINE
+	VAR __DS0FilterTable = 
+		FILTER(
+			KEEPFILTERS(VALUES('Dim Tender'[Tender ID])),
+			AND(NOT(ISBLANK('Dim Tender'[Tender ID])), 'Dim Tender'[Tender ID] <> 0)
+		)
+
+	VAR __DS0FilterTable2 = 
+		FILTER(
+			KEEPFILTERS(VALUES('Dim Client'[Client Name])),
+			OR(
+				'Dim Client'[Client Name] = "Severn Trent",
+				'Dim Client'[Client Name] = "Hafren Dyfrdwy"
+			)
+		)
+
+	VAR __DS0Core = 
+		SELECTCOLUMNS(
+			KEEPFILTERS(
+				FILTER(
+					KEEPFILTERS(
+						SUMMARIZECOLUMNS(
+							'Dim Tender'[Tender ID],
+							'Dim Client'[Client Name],
+							'Dim Site'[Site Name],
+							'Dim Site'[Site ID],
+							'Dim Site'[SiteCode],
+							'Dim Site'[Site Postcode],
+							'Dim Tender Status'[Status Description],
+							'Dim Tender Status Issue'[Tender Status Issue],
+							'Dim Tender'[Tender Description],
+							'Dim Tender'[Client Reference Number],
+							'Dim Tender'[Request Received Date],
+							'Fact Tender'[Return To Client By Date],
+							'Fact Tender'[Required Work Completed Date],
+							'Dim CM'[Full Name],
+							__DS0FilterTable,
+							__DS0FilterTable2,
+							"CountRowsFact_Tender", COUNTROWS('Fact Tender')
+						)
+					),
+					OR(
+						OR(
+							OR(
+								OR(
+									OR(
+										OR(
+											OR(
+												OR(
+													OR(
+														OR(
+															OR(
+																OR(
+																	OR(
+																		NOT(ISBLANK('Dim Tender'[Tender ID])),
+																		NOT(ISBLANK('Dim Client'[Client Name]))
+																	),
+																	NOT(ISBLANK('Dim Site'[Site Name]))
+																),
+																NOT(ISBLANK('Dim Site'[Site ID]))
+															),
+															NOT(ISBLANK('Dim Site'[SiteCode]))
+														),
+														NOT(ISBLANK('Dim Site'[Site Postcode]))
+													),
+													NOT(ISBLANK('Dim Tender Status'[Status Description]))
+												),
+												NOT(ISBLANK('Dim Tender Status Issue'[Tender Status Issue]))
+											),
+											NOT(ISBLANK('Dim Tender'[Tender Description]))
+										),
+										NOT(ISBLANK('Dim Tender'[Client Reference Number]))
+									),
+									NOT(ISBLANK('Dim Tender'[Request Received Date]))
+								),
+								NOT(ISBLANK('Fact Tender'[Return To Client By Date]))
+							),
+							NOT(ISBLANK('Fact Tender'[Required Work Completed Date]))
+						),
+						NOT(ISBLANK('Dim CM'[Full Name]))
+					)
+				)
+			),
+			"'Dim Tender'[Tender ID]", 'Dim Tender'[Tender ID],
+			"'Dim Client'[Client Name]", 'Dim Client'[Client Name],
+			"'Dim Site'[Site Name]", 'Dim Site'[Site Name],
+			"'Dim Site'[Site ID]", 'Dim Site'[Site ID],
+			"'Dim Site'[SiteCode]", 'Dim Site'[SiteCode],
+			"'Dim Site'[Site Postcode]", 'Dim Site'[Site Postcode],
+			"'Dim Tender Status'[Status Description]", 'Dim Tender Status'[Status Description],
+			"'Dim Tender Status Issue'[Tender Status Issue]", 'Dim Tender Status Issue'[Tender Status Issue],
+			"'Dim Tender'[Tender Description]", 'Dim Tender'[Tender Description],
+			"'Dim Tender'[Client Reference Number]", 'Dim Tender'[Client Reference Number],
+			"'Dim Tender'[Request Received Date]", 'Dim Tender'[Request Received Date],
+			"'Fact Tender'[Return To Client By Date]", 'Fact Tender'[Return To Client By Date],
+			"'Fact Tender'[Required Work Completed Date]", 'Fact Tender'[Required Work Completed Date],
+			"'Dim CM'[Full Name]", 'Dim CM'[Full Name]
+		)
+
+	VAR __DS0BodyLimited = 
+		TOPN(
+			500000,
+			__DS0Core,
+			'Dim Tender'[Tender ID],
+			1,
+			'Dim Client'[Client Name],
+			1,
+			'Dim Site'[Site Name],
+			1,
+			'Dim Site'[Site ID],
+			1,
+			'Dim Site'[SiteCode],
+			1,
+			'Dim Site'[Site Postcode],
+			1,
+			'Dim Tender Status'[Status Description],
+			1,
+			'Dim Tender Status Issue'[Tender Status Issue],
+			1,
+			'Dim Tender'[Tender Description],
+			1,
+			'Dim Tender'[Client Reference Number],
+			1,
+			'Dim Tender'[Request Received Date],
+			1,
+			'Fact Tender'[Return To Client By Date],
+			1,
+			'Fact Tender'[Required Work Completed Date],
+			1,
+			'Dim CM'[Full Name],
+			1
+		)
+
+EVALUATE
+	__DS0BodyLimited
+
+ORDER BY
+	'Dim Tender'[Tender ID],
+	'Dim Client'[Client Name],
+	'Dim Site'[Site Name],
+	'Dim Site'[Site ID],
+	'Dim Site'[SiteCode],
+	'Dim Site'[Site Postcode],
+	'Dim Tender Status'[Status Description],
+	'Dim Tender Status Issue'[Tender Status Issue],
+	'Dim Tender'[Tender Description],
+	'Dim Tender'[Client Reference Number],
+	'Dim Tender'[Request Received Date],
+	'Fact Tender'[Return To Client By Date],
+	'Fact Tender'[Required Work Completed Date],
+	'Dim CM'[Full Name]
