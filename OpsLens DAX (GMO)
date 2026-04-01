@@ -1,0 +1,81 @@
+Define
+var ASDQ___DS0FilterTable = TREATAS(
+			{"Current",
+				"Fiscal YTD"},
+			'Calculations - Time Intelligence'[Time Intelligence]
+		)
+var ASDQ___DS0FilterTable2 = TREATAS({"Current Fiscal Year"}, 'Dates'[Current Fiscal Year Selector])
+var ASDQ___DS0FilterTable3 = TREATAS({0,
+			BLANK()}, 'Dates'[MonthOffset])
+var ASDQ___DS0FilterTable4 = TREATAS({"Grounds Maintenance",
+			"Winter Maintenance"}, 'Dim CM'[Division])
+var ASDQ___DS0FilterTable5 = TREATAS({-1,
+			0,
+			-2,
+			BLANK()}, 'Dates'[FiscalYearOffset])
+var ASDQ___DS0FilterTable6 = TREATAS({0,
+			BLANK()}, 'Fact Team Business Unit'[Is Test])
+var ASDQ___DS0FilterTable7 = FILTER(
+			KEEPFILTERS(VALUES('Fact Field Team'[IsTest])),
+			'Fact Field Team'[IsTest] = 0
+		)
+var ASDQ___DS0FilterTable8 = TREATAS({0,
+			BLANK()}, 'Dim Client'[IsTest])
+var ASDQ___DS0FilterTable9 = FILTER(
+			KEEPFILTERS(VALUES('Dim Visit Status Issue'[Visit Status Issue])),
+			NOT(
+				'Dim Visit Status Issue'[Visit Status Issue] IN {"Schedule Amendment - VNR"}
+			)
+		)
+var ASDQ___DS0Core = SUMMARIZECOLUMNS(
+			ROLLUPADDISSUBTOTAL(
+				ROLLUPGROUP(
+					'Calculations - Time Intelligence'[Time Intelligence],
+					'Calculations - Time Intelligence'[Ordinal]
+				), "IsGrandTotalRowTotal"
+			),
+			ASDQ___DS0FilterTable,
+			ASDQ___DS0FilterTable2,
+			ASDQ___DS0FilterTable3,
+			ASDQ___DS0FilterTable4,
+			ASDQ___DS0FilterTable5,
+			ASDQ___DS0FilterTable6,
+			ASDQ___DS0FilterTable7,
+			ASDQ___DS0FilterTable8,
+			ASDQ___DS0FilterTable9,
+			"gmo_Team_Scheduling_Timeliness", [Team Scheduling Timeliness],
+			"gmo___Punctuality_Visits", [% Punctuality Visits],
+			"v_gmo___Punctuality_Visits_FormatString", IGNORE([_% Punctuality Visits FormatString]),
+			"gmo___Reliability_Visits", [% Reliability Visits],
+			"v_gmo___Reliability_Visits_FormatString", IGNORE([_% Reliability Visits FormatString]),
+			"v_gmo_Team_Scheduling_Timeliness_FormatString", IGNORE([_Team Scheduling Timeliness FormatString]),
+			"gmo___Completed_Visits_via_Hubscape", [% Completed Visits via Hubscape],
+			"v_gmo___Completed_Visits_via_Hubscape_FormatString", IGNORE([_% Completed Visits via Hubscape FormatString]),
+			"gmo_Quick_Check_Weighted_Average", [Quick Check Weighted Average],
+			"v_gmo_Quick_Check_Weighted_Average_FormatString", IGNORE([_Quick Check Weighted Average FormatString]),
+			"gmo_Completed_Visits_Without_Image__Operative__GPS__Start_and_End_Date_Warnings__BW___", [Completed Visits Without Image, Operative, GPS, Start and End Date Warnings (BW) %],
+			"v_gmo_Completed_Visits_Without_Image__Operative__GPS__Start_and_End_Date_Warnings__BW____FormatString", IGNORE(
+				[_Completed Visits Without Image, Operative, GPS, Start and End Date Warnings (BW) % FormatString]
+			)
+		)
+var ASDQ___DS0PrimaryWindowed = TOPN(
+			502,
+			ASDQ___DS0Core,
+			[IsGrandTotalRowTotal],
+			0,
+			[gmo_Team_Scheduling_Timeliness],
+			0,
+			'Calculations - Time Intelligence'[Ordinal],
+			1,
+			'Calculations - Time Intelligence'[Time Intelligence],
+			1
+		)
+
+EVALUATE
+	ASDQ___DS0PrimaryWindowed
+
+ORDER BY
+	[IsGrandTotalRowTotal] DESC,
+	[gmo_Team_Scheduling_Timeliness] DESC,
+	'Calculations - Time Intelligence'[Ordinal],
+	'Calculations - Time Intelligence'[Time Intelligence]
